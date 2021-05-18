@@ -1,3 +1,4 @@
 venv
 credentials.env
 driver/chromedriver
+timesheet/.~lock.timesheet.xlsx
