@@ -9,6 +9,8 @@ from selenium import webdriver
 from dotenv import dotenv_values
 from selenium.webdriver.common.keys import Keys
 
+from enums import RowDetails, ExcelColNames, WebElements
+
 
 def submit_timesheet(driver, base_dir):
     try:
@@ -16,40 +18,36 @@ def submit_timesheet(driver, base_dir):
         df = pd.read_excel(os.path.join(base_dir, 'timesheet/timesheet.xlsx'))
                 
         for _, row in df.iterrows():
-            date = row["Date"]
-            status = row["Status"]
-            period = "daily"
+            date = row[ExcelColNames.DATE.value]
+            type = row[ExcelColNames.TYPE.value]
+            status = row[ExcelColNames.STATUS.value]
+            to_hour = row[ExcelColNames.TO_HOUR.value]
+            from_hour = row[ExcelColNames.FROM_HOUR.value]
 
-            if status == "remote":
-                # time.sleep(15)
-                while driver.find_element_by_id("_easyui_textbox_input2").get_attribute("value") != "کارکرد ریموت":
-                    driver.find_element_by_id("_easyui_textbox_input2").send_keys(Keys.ARROW_DOWN)
+            while driver.find_element_by_id(WebElements.STATUS.value).get_attribute("value") != status:
+                driver.find_element_by_id(WebElements.STATUS.value).send_keys(Keys.ARROW_DOWN)
 
+            if type == RowDetails.HOURLY.value:
                 flag = True
-                while driver.find_element_by_id("_easyui_textbox_input3").get_attribute("value") != "ساعتی":
+                while driver.find_element_by_id(WebElements.TYPE.value).get_attribute("value") != RowDetails.HOURLY.value:
                     if flag:
-                        driver.find_element_by_id("_easyui_textbox_input3").send_keys(Keys.CONTROL, 'a', Keys.NULL, Keys.BACKSPACE)
-                        driver.find_element_by_id("_easyui_textbox_input3").send_keys('س')
+                        driver.find_element_by_id(WebElements.TYPE.value).send_keys(Keys.CONTROL, 'a', Keys.NULL, Keys.BACKSPACE)
+                        driver.find_element_by_id(WebElements.TYPE.value).send_keys('س')
                     flag = False
-                    driver.find_element_by_id("_easyui_textbox_input3").send_keys(Keys.ARROW_DOWN)
-                    if driver.find_element_by_id("_easyui_textbox_input3").get_attribute("value") == "ساعتی":
-                        driver.find_element_by_id("_easyui_textbox_input3").send_keys(Keys.TAB)
-            
+                    driver.find_element_by_id(WebElements.TYPE.value).send_keys(Keys.ARROW_DOWN)
+                    if driver.find_element_by_id(WebElements.TYPE.value).get_attribute("value") == RowDetails.HOURLY.value:
+                        driver.find_element_by_id(WebElements.TYPE.value).send_keys(Keys.TAB)
 
-                # set start_date
-                print(date)
-                driver.find_element_by_id("_easyui_textbox_input5")
-                driver.execute_script("arguments[0].value", 'salam')
-                # driver.find_element_by_id("_easyui_textbox_input4").send_keys(date)
-                # print(driver.find_element_by_id("_easyui_textbox_input5"))
-                # driver.find_element_by_id("_easyui_textbox_input5").clear()
-                # driver.find_element_by_xpath("//input[@name='sg-LeaveRequestBoard-ib0-lb0-lb0-lb1-lb0-f2-idun']").send_keys(date)
-                print('start date were set')
+                time.sleep(0.3)
+                driver.find_element_by_id(WebElements.HOURLY_START_DATE.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, date)
+                driver.find_element_by_id(WebElements.HOURLY_END_DATE.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, date)
+                driver.find_element_by_id(WebElements.HOURLY_FROM_HOUR.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, from_hour)
+                driver.find_element_by_id(WebElements.HOURLY_TO_HOUR.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, to_hour)
+            else:
+                driver.find_element_by_id(WebElements.DAILY_START_DATE.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, date)
+                driver.find_element_by_id(WebElements.DAILY_END_DATE.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, date)
 
-                # driver.find_element_by_xpath("//a[@data-sg-tooltip='ذخیره']").click()
-                # driver.find_element_by_id("_easyui_textbox_input2").click()
-
-            time.sleep(1000)
+            driver.find_element_by_id(WebElements.SAVE_BUTTON.value).click()
 
     except Exception as e:
         print(e)
@@ -110,4 +108,3 @@ if __name__ == '__main__':
         logging.error("Make sure your company VPN is on or you might turn the other VPNs off.")
     login(driver, base_dir)
     submit_timesheet(driver, base_dir)
-    
