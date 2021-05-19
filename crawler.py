@@ -5,12 +5,40 @@ import logging
 import subprocess
 
 import pandas as pd
+from pandas.core import base
 from selenium import webdriver
 from dotenv import dotenv_values
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
 from enums import RowDetails, ExcelColNames, WebElements
 
+
+def get_global_logger(name):
+    base_dir = os.path.dirname(__file__)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        '%(asctime)s:%(name)s:%(funcName)s:%(message)s',
+        datefmt='%Y/%m/%d %H:%M:%S'
+    )
+    
+    if not os.path.isfile(os.path.join(base_dir, 'logs/logs.txt')):
+        print(os.path.join(base_dir, 'logs/logs.txt'))
+        with open(os.path.join(base_dir, 'logs/logs.txt'), 'w') as f:
+            print('salammm')
+            pass
+    file_handler = logging.FileHandler(filename=os.path.join(base_dir, 'logs/logs.txt'))
+    file_handler.setLevel(level=logging.INFO)
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+
+    return logger
+
+
+logger = get_global_logger(__name__)
+    
 
 def submit_timesheet(driver, base_dir):
     try:
@@ -48,10 +76,10 @@ def submit_timesheet(driver, base_dir):
                 driver.find_element_by_id(WebElements.DAILY_END_DATE.value).send_keys(Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, Keys.BACKSPACE, date)
 
             driver.find_element_by_id(WebElements.SAVE_BUTTON.value).click()
+            time.sleep(1000)
 
     except Exception as e:
-        print(e)
-        # logging.error("logging was unsuccessful")
+        logger.error("logging was unsuccessful")
 
 def login(driver, base_dir):
     # Reading username and password from credentials.env file
@@ -88,23 +116,24 @@ def check_chrome_driver_unix(base_dir):
         gc_version = gc.split()[2]
         if os.path.isfile(os.path.join(base_dir, 'driver/chromedriver')):
             return True, True
-        logging.error("You should download {} chromedriver from the following link: \nhttps://chromedriver.storage.googleapis.com/index.html".format(gc_version))    
+        logger.error("You should download {} chromedriver from the following link: \nhttps://chromedriver.storage.googleapis.com/index.html".format(gc_version))    
         return True, False
 
     except Exception as e:
-        print(e)
-        logging.error("Make sure you have installed Chrome properly")
+        logger.error("Make sure you have installed Chrome properly")
         return False, False
     
 
 
 if __name__ == '__main__':
     base_dir = os.path.dirname(__file__)
+    # opts = Options()
+    # opts.add_argument("user-agent=Mozilla FireFox 5.0")
     chrome_flag, driver_flag = check_chrome_driver_unix(base_dir)
     driver = webdriver.Chrome(executable_path=get_driver_path(base_dir))
     try:
         driver.get('http://172.16.190.132/HcmDigikala/Account/Login?ReturnUrl=%2fhcmdigikala')
     except:
-        logging.error("Make sure your company VPN is on or you might turn the other VPNs off.")
+        logger.error("Make sure your company VPN is on or you might turn the other VPNs off.")
     login(driver, base_dir)
     submit_timesheet(driver, base_dir)

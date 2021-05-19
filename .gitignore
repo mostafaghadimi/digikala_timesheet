@@ -1,4 +1,6 @@
 venv
+logs/*
+__pycache__
 credentials.env
 driver/chromedriver
 timesheet/.~lock.timesheet.xlsx
