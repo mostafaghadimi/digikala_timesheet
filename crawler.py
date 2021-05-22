@@ -42,10 +42,10 @@ logger = get_global_logger(__name__)
 
 def submit_timesheet(driver, base_dir):
     try:
-        driver.get('http://172.16.190.132/HcmDigikala/defaultportal/Core/Index%5D?board=LeaveRequestBoard')
         df = pd.read_excel(os.path.join(base_dir, 'timesheet/timesheet.xlsx'))
                 
         for _, row in df.iterrows():
+            driver.get('http://172.16.190.132/HcmDigikala/defaultportal/Core/Index%5D?board=LeaveRequestBoard')
             date = row[ExcelColNames.DATE.value]
             type = row[ExcelColNames.TYPE.value]
             status = row[ExcelColNames.STATUS.value]
@@ -100,7 +100,7 @@ def download_chrome_driver():
     """
     This method will download the required google chrome driver.
     """
-    # TODO://
+    # TODO:// Complete this part using proxy
     pass
 
 
